@@ -1,0 +1,30 @@
+
+arr = [[NSArray alloc] initWithObjects:@"12244874454688731394",nil];
+[vc onTouchDownLikeBtnOnFloatView]; [btn LikeBtnReduceEnd]; [vc onDataChangedWithAdded:nil andChanged:arr andDeleted:nil];
+
+//模块便宜 0x000b7000  0x000ef000 0x00068000
+
+dataItem = [btn m_item]
+msCenter = [MMServiceCenter defaultCenter];
+wcFacade = [msCenter getService: [WCFacade class]];
+itemID = [dataItem itemID];
+username = [dataItem username];
+cmItem = [[WCCommentItem alloc] init];
+[cmItem setItemID:itemID];
+[cmItem setToUserName:username];
+[cmItem setType:1];
+[cmItem setSource:0];
+m_commentUploadMgr = [wcFacade valueForKey:@"m_commentUploadMgr"];
+date = [NSDate date];
+time = [date timeIntervalSince1970];
+[cmItem setCreateTime:time];
+[cmItem setInQueueTime:time];
+curNsrName = [SettingUtil getCurUsrName];
+m_queue = [m_commentUploadMgr valueForKey:@"m_queue"];
+queueAll = [m_queue getAll];
+qcount = [queueAll count];
+clientID = [NSString stringWithFormat:@"wcc:%@-%u-%lu",curNsrName,time,qcount];
+[cmItem setClientID:clientID];
+[m_queue push:cmItem];
+[m_commentUploadMgr addCommentToWCObjectCache:cmItem];
+[m_commentUploadMgr tryStartNextTask];

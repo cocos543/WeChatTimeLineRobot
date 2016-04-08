@@ -1,0 +1,121 @@
+1. 
+点赞按钮所在控制器 WCTimeLineViewController
+点赞按钮时触发 onTouchDownLikeBtnOnFloatView
+
+2. 
+点赞按钮为 WCLikeButton 
+所在头文件WCLikeButton.h
+
+#import "MMUIButton.h"
+
+@class WCDataItem;
+
+@interface WCLikeButton : MMUIButton {
+        WCDataItem* m_item;
+        unsigned long m_uiSourceType;
+        BOOL m_likeOperating;
+}
+@property(assign, nonatomic) unsigned long m_uiSourceType;
+@property(retain, nonatomic) WCDataItem* m_item;
+-(void).cxx_destruct;
+//点赞触发方法,点赞或者取消
+-(void)onLikeFriend;
+//点赞取消触发方法
+-(void)LikeBtnReduceEnd;
+-(void)LikeBtnReduce;
+//心图放大效果
+-(void)LikeBtnEnlarge;
+-(id)initWithDataItem:(id)dataItem;
+-(void)updateLikeBtn;
+@end
+
+//用 [self valueForKey:(NSString *)m_likeOperating]; 获取m_likeOperating属性
+
+/*点击点赞评论按钮 流程*/
+[vc shouldInteractivePop] => [vc getView] => [vc onCommentDataItem:Class name: WCDataItem] => [vc floatViewHiddenWrap] => [btn setM_item:Class name: WCDataItem] => [btn updateLikeBtn]
+
+
+/*点击 赞 流程*/
+[vc onTouchDownLikeBtnOnFloatView] => [vc tryResumeStatus] => [btn onLikeFriend] => [btn LikeBtnEnlarge] => [btn LikeBtnReduce] => [btn LikeBtnReduceEnd] => 网络状态 =>　[vc onDataChangedWithAdded:(null) andChanged:(12244874454688731394) andDeleted:(null)]] => 其他更新table操作省略
+
+/*点击 取消赞 流程*/
+[vc onTouchDownLikeBtnOnFloatView] => [vc tryResumeStatus] => [btn onLikeFriend] => [btn LikeBtnEnlarge] => [btn LikeBtnReduce] => [btn LikeBtnReduceEnd] => [vc onDataChangedWithAdded:(null) andChanged:(12244874454688731394) andDeleted:(null)]] => 其他更新table操作省略
+
+/*加载Cell的时候,获取数据源的流程*/
+//在vc 的-(id)tableView:(id)view cellForRowAtIndexPath:(id)indexPath;下
+int itemIndex = [vc calcDataItemIndex:[indexPath section]];
+MMServiceCenter *msCenter = [MMServiceCenter defaultCenter];
+//获取WCFacade对象 
+WCFacade *wcFacade = [msCenter getService: [WCFacade class]];
+//最终获取到DataItem对象
+WCDataItem * dataItem = [wcFacade getTimelineDataItemOfIndex:itemIndex];
+
+/*产生赞效果的流程 [btn LikeBtnReduceEnd]/
+BOOL likeFlag = [btn.m_item likeFlag];
+MMServiceCenter *msCenter = [MMServiceCenter defaultCenter];
+WCFacade *wcFacade = [msCenter getService: [WCFacade class]];
+if(likeFlag){
+	[wcFacade unLikeObject:[btn.m_item] ofUser:[btn.m_item.username]]
+}else{
+	[wcFacade likeObject:[btn.m_item] ofUser:[btn.m_item.username] source:[btn.m_uiSourceType]];
+}
+//最后再调用updateLikeBtn 更新状态
+[btn updateLikeBtn];
+
+/* 点赞时wcFacade内部执行流程 [wcFacade likeObject:[btn.m_item] ofUser:[btn.m_item.username] source:[btn.m_uiSourceType]] */
+WCDataItem *dataItem = [btn.m_item];
+id itemID = [dataItem itemID];
+NSString *username = [dataItem username];
+
+//先判断itemID和username长度是否为0,为0则不做任何操作
+
+WCCommentItem *cmItem = [[WCCommentItem alloc] init];
+[cmItem setItemID:itemID];
+[cmItem setToUserName:username];
+[cmItem setType:1];
+[cmItem setSource:0];
+//判断advertiseInfo是否为空,不为空则执行左侧代码,为空则执行右侧代码
+if([dataItem advertiseInfo]){
+	//左侧代码
+}else{
+	//右侧代码
+	//朋友圈点赞是执行右侧代码
+	WCCommentUploadMgr *m_commentUploadMgr = [self valueForKey:@"m_commentUploadMgr"];
+	[m_commentUploadMgr addComment:cmItem];
+}
+//完成上面步骤之后已经可以实现点赞同时界面会更新.....
+//还有其他操作......
+
+/*[m_commentUploadMgr addComment:cmItem] 内部流程分析*/
+//先判断cmItem是否为空,为空则不做任何操作
+NSMutableDictionary *m_inQueueCommentsForWCObject = [self valueForKey:@"m_inQueueCommentsForWCObject"]
+id itemID = [cmItem itemID];
+if([cmItem type] != 1){
+	//跳到下方执行
+}else{
+	//继续执行
+	//执行了 (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id*)stackbuf count:(NSUInteger)len获取到的值为0
+	unsigned time = (unsigned)[[[NSDate date] timeIntervalSince1970];
+	[cmItem setCreateTime:time];
+	[cmItem setInQueueTime:time];
+	NSString *curNsrName = [SettingUtil getCurUsrName];
+	FIFOFileQueue* m_queue = [self valueForKey:@"m_queue"];
+	//_NSArrayM 类型
+	id queueAll = [m_queue getAll];
+	int qcount = [queueAll count];
+	//wcc:wxid_rqd7y0p2kgpq52-1460013251-0
+	NSString *clientID = [NSString stringWithFormat:@"wcc:%@-%u-%lu",curNsrName,time,qcount];
+	[cmItem setClientID:clientID];
+	[m_queue push:cmItem];
+	[self addCommentToWCObjectCache:cmItem];
+	//执行下面命令后开始点赞
+	[self tryStartNextTask];
+}
+
+/*[m_commentUploadMgr tryStartNextTask] 内部流程分析*/
+//先取出top,然后执行doComment,失败则执行pushBackTopTask
+//popTopTask
+if(doComment == 0){
+	pushBackTopTask
+}
+tryStartNextTask

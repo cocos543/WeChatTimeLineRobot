@@ -1,0 +1,10 @@
+Package: com.cocos.ccautolikeforwechat
+Name: CCAutoLikeForWeChat
+Depends: mobilesubstrate
+Architecture: iphoneos-arm
+Description: An awesome MobileSubstrate tweak!
+Maintainer: Cocos
+Author: Cocos
+Section: Tweaks
+Version: 0.0.1-70+debug
+Installed-Size: 140
