@@ -51,6 +51,9 @@ static NSString *ccFirstTidString;
 
 %new
 -(void)ccUpdateDataItemsWithNumber:(int)number{
+	if(ccDataItemsOffect >= number){
+		return;
+	}
 	//根据提供的section数量获取dataitems
 	WCFacade *wcFacade = [(MMServiceCenter *)[%c(MMServiceCenter) defaultCenter] getService: [%c(WCFacade) class]];
 	//取得需要的DataItem对象
@@ -99,9 +102,7 @@ static NSString *ccFirstTidString;
 
 -(int)numberOfSectionsInTableView:(id)tableView{
 	int number = %orig;
-	if(ccDataItemsOffect < number){
-		[self ccUpdateDataItemsWithNumber:number];
-	}
+	[self ccUpdateDataItemsWithNumber:number];
 	NSLog(@"Total number of section is %d,offect is %d",number,ccDataItemsOffect);
 	
 	return number;
