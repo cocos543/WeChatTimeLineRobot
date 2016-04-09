@@ -5,8 +5,8 @@ TARGET = iphone:latest:7.0
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = CCAutoLikeForWeChat
-CCAutoLikeForWeChat_FILES = Tweak.xm
+TWEAK_NAME = WeChatTimeLineRobot
+WeChatTimeLineRobot_FILES = Tweak.xm
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

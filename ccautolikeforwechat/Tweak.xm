@@ -1,114 +1,11 @@
-/* How to Hook with Logos
-Hooks are written with syntax similar to that of an Objective-C @implementation.
-You don't need to #include <substrate.h>, it will be done automatically, as will
-the generation of a class list and an automatic constructor.
-
-%hook ClassName
-
-// Hooking a class method
-+ (id)sharedInstance {
-	return %orig;
-}
-
-// Hooking an instance method with an argument.
-- (void)messageName:(int)argument {
-	%log; // Write a message about this call, including its class, name and arguments, to the system log.
-
-	%orig; // Call through to the original function with its original arguments.
-	%orig(nil); // Call through to the original function with a custom argument.
-
-	// If you use %orig(), you MUST supply all arguments (except for self and _cmd, the automatically generated ones.)
-}
-
-// Hooking an instance method with no arguments.
-- (id)noArguments {
-	%log;
-	id awesome = %orig;
-	[awesome doSomethingElse];
-
-	return awesome;
-}
-
-// Always make sure you clean up after yourself; Not doing so could have grave consequences!
-%end
-*/
-
 #include "CCAutoLikeHeader.h"
-
-@interface FIFOFileQueue : NSObject
--(BOOL)push:(id)push;
--(id)getAll;
-@end
-
-@interface WCCommentUploadMgr : NSObject
--(void)tryStartNextTask;
--(void)pushBackTopTask;
--(void)popTopTask;
--(void)addComment:(id)comment;
--(void)addCommentToWCObjectCache:(id)wcobjectCache;
-@end
-
-@interface WCCommentItem : NSObject
-@property(retain, nonatomic) NSString* clientID;
-@property(assign, nonatomic) unsigned inQueueTime;
-@property(assign, nonatomic) unsigned createTime;
-@property(assign, nonatomic) int source;
-@property(assign, nonatomic) int type;
-@property(retain, nonatomic) NSString* itemID;
-@property(retain, nonatomic) NSString* toUserName;
-@end
-
-@interface WCAdvertiseInfo : NSObject
-@end
-//@class MMUIButton;
-@interface WCDataItem : NSObject
-@property(assign, nonatomic) BOOL likeFlag;
-@property(retain, nonatomic) NSString* username;
-@property(retain, nonatomic) NSString* tid;
-@property(retain, nonatomic) WCAdvertiseInfo* advertiseInfo;
--(id)itemID;
-@end
-
-@interface WCLikeButton : NSObject
-@property(retain, nonatomic) WCDataItem* m_item;
-//点赞取消触发方法
--(void)LikeBtnReduceEnd;
-//用于初始化
--(id)initWithDataItem:(id)dataItem;
-@end
-
-
-@interface SettingUtil : NSObject
-+(id)getCurUsrName;
-@end
-
-@interface MMServiceCenter : NSObject
-+(id)defaultCenter;
--(id)getService:(Class)className;
-@end
-
-@interface WCFacade : NSObject
--(WCDataItem *)getTimelineDataItemOfIndex:(int)index;
-//点赞内部调用,这里不用到
--(void)likeObject:(id)object ofUser:(id)user source:(int)source;
-////点赞内部调用,这里不用到
--(BOOL)unLikeObject:(id)object ofUser:(id)user;
-@end
-
-@interface WCTimeLineViewController : NSObject
--(int)calcDataItemIndex:(int)index;
--(void)ccStartAutoLike;
--(void)ccUpdateDataItemsWithNumber:(int)number;
--(void)ccStartQueueToLike;
-@end
-
 
 static NSMutableArray* ccDataItemsArray;
 static int ccDataItemsOffect = 0;
 static BOOL ccAutoLiking = NO;
 static NSString *ccFirstTidString;
-%hook WCTimeLineViewController
 
+%hook WCTimeLineViewController
 %new
 -(void)ccStartAutoLike{
 	NSLog(@"ccStartAutoLike has been call~ %@",[NSThread currentThread]);
@@ -202,8 +99,11 @@ static NSString *ccFirstTidString;
 
 -(int)numberOfSectionsInTableView:(id)tableView{
 	int number = %orig;
+	if(ccDataItemsOffect < number){
+		[self ccUpdateDataItemsWithNumber:number];
+	}
 	NSLog(@"Total number of section is %d,offect is %d",number,ccDataItemsOffect);
-	[self ccUpdateDataItemsWithNumber:number];
+	
 	return number;
 }
 
@@ -211,6 +111,8 @@ static NSString *ccFirstTidString;
 	if(!ccAutoLiking){
 		%log;
 		%orig;
+	}else{
+		NSLog(@"reload is disable~~");
 	}
 }
 %end
