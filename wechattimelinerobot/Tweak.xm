@@ -16,7 +16,7 @@ static NSString *ccFirstTidString;
 	for(WCDataItem *dataItem in ccDataItemsArray){
 		if([dataItem advertiseInfo]){
 			//别给广告点赞了.......
-			return;
+			continue;
 		}
 		// source 为 0,调试汇编代码可以得到...
 		// [wcFacade likeObject:dataItem ofUser:dataItem.username source:0];
