@@ -70,4 +70,5 @@
 -(void)ccStartAutoLike;
 -(void)ccUpdateDataItemsWithNumber:(int)number;
 -(void)ccStartQueueToLike;
+-(void)reloadTableView;
 @end

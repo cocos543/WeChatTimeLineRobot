@@ -51,9 +51,6 @@ static NSString *ccFirstTidString;
 
 %new
 -(void)ccUpdateDataItemsWithNumber:(int)number{
-	if(ccDataItemsOffect >= number){
-		return;
-	}
 	//根据提供的section数量获取dataitems
 	WCFacade *wcFacade = [(MMServiceCenter *)[%c(MMServiceCenter) defaultCenter] getService: [%c(WCFacade) class]];
 	//取得需要的DataItem对象
@@ -70,6 +67,13 @@ static NSString *ccFirstTidString;
 		NSLog(@"reset ccDataItemsOffect~~~");
 	}
 
+	/*发现一种特殊数据状态
+	Total number of section is 11,offect is 13
+	很可能是offect是数据更新前保存的,当有新的dataItem出现时,number的值可能变成小于offect,所以判断offect和number关系的代码应该移动到检测数据是否变化之后
+	*/
+	if(ccDataItemsOffect >= number){
+		return;
+	}
 
 	for (int i = ccDataItemsOffect; i < number; i++){
 		int itemIndex = [self calcDataItemIndex:i];

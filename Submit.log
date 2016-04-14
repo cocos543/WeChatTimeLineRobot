@@ -3,5 +3,10 @@ In the future, I will add the feature of automatic comments and another funny fe
 
 Test pass by WeChat version 6.3.15
 
+v 0.0.2.8
+1. Fix bug about sometimes it loses effect.
+1. 修复新消息点赞失灵的问题
+
 v 0.0.2.5
 1. Avoid liking advertisement.
+1. 避免对广告点赞
