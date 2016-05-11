@@ -119,3 +119,6 @@ if(doComment == 0){
 	pushBackTopTask
 }
 tryStartNextTask
+
+
+3. 朋友圈顶部是一个WCListHeaderView,在tableView中的
